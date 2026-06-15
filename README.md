@@ -1,35 +1,49 @@
-# 📚 Book Mood Board Generator
+# 📚 Moodmark 🔖
 
-Type in any book title and get back a visual mood board: the story's overall vibe,
-a color palette (with the reasoning behind each color), aesthetic keywords, and a
-grid of real photos that capture the feeling of the book.
+**Turn any book into a visual mood board — its color palette, aesthetics, and curated photos, plus similar reads to explore.**
 
-## How it works
+Enter a book title and Moodmark "reads" it, then captures its atmosphere as a color
+palette, aesthetic keywords, an essence-capturing quote, and a wall of real photos —
+all downloadable as a single shareable image. It even recommends books with a similar
+vibe that you can click to explore.
 
-Two steps behind a [Streamlit](https://streamlit.io) interface:
+![A mood board Moodmark generated for "Scythe"](docs/sample_board.png)
 
-1. **Claude** (`claude-opus-4-8`) "reads" the book and returns a structured mood-board
-   concept — overall vibe, hex color palette, aesthetic tags, and a set of image
-   search queries.
-2. Those queries are sent to the **Unsplash** photo API, which returns real
-   Pinterest-style images. Each photo credits its photographer (an Unsplash
-   requirement).
+> _Above: the downloadable image Moodmark composes (palette + photos). For a peek at the live app UI, run it locally — see Setup._
 
-Claude only produces text, so the visuals come from Unsplash — that split is the
-whole architecture.
+## ✨ Features
 
-## Setup
+- 🎨 **Color palette** — the 4 colors most relevant to the book's themes, each with the reasoning behind it
+- 🏷️ **Aesthetics** — evocative style tags (e.g. "dark academia", "clinical futurism")
+- 🖼️ **Curated photos** — 6 real Unsplash images that match the story's vibe (with photographer credit)
+- 📖 **Real cover & year** — pulled automatically from Open Library
+- 💬 **Essence quote** — a short line that sums up the spirit of the story
+- ⬇️ **One-click download** — the whole board composed into a single shareable PNG
+- 🔗 **Explore similar reads** — click a recommendation to open a panel with its cover, description, and its own palette
+
+## 🛠️ How it works
+
+Three sources behind a [Streamlit](https://streamlit.io) interface:
+
+1. **Claude** (`claude-sonnet-4-6`) reads the book and returns a structured mood-board
+   concept — vibe, quote, hex palette, aesthetic tags, photo search queries, and
+   similar-book recommendations.
+2. **Unsplash** turns those search queries into real Pinterest-style photos.
+3. **Open Library** (no API key needed) supplies real book covers and publish years.
+
+Claude only produces text, so the visuals come from Unsplash and Open Library — that
+split is the whole architecture.
+
+## 🚀 Setup
 
 ### 1. Get two API keys (both free to start)
 
 - **Anthropic** (for Claude): https://console.anthropic.com
-- **Unsplash** (for photos): https://unsplash.com/developers — register an app and
-  copy the **Access Key**.
+- **Unsplash** (for photos): https://unsplash.com/developers — register an app and copy the **Access Key**.
 
 ### 2. Install dependencies
 
 ```powershell
-cd book-mood-board
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -37,9 +51,14 @@ pip install -r requirements.txt
 
 ### 3. Add your keys
 
-Either paste them into the app's sidebar each time, **or** store them once:
-copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill in
-your keys. (That file is git-ignored so your keys stay private.)
+Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill in your keys:
+
+```toml
+ANTHROPIC_API_KEY = "sk-ant-..."
+UNSPLASH_ACCESS_KEY = "your-unsplash-access-key"
+```
+
+`secrets.toml` is git-ignored, so your keys never get committed.
 
 ### 4. Run it
 
@@ -47,18 +66,21 @@ your keys. (That file is git-ignored so your keys stay private.)
 streamlit run app.py
 ```
 
-Your browser opens to the app. Type a book title (try `Scythe`) and hit
-**Generate mood board**.
+Your browser opens to the app. Type a book title (try `Scythe`) and hit **✨ Generate mood board**.
 
-## Notes & costs
+## 🧰 Tech stack
 
-- Each generation makes **one Claude call** plus a handful of Unsplash searches.
-  Results are cached per book title, so re-typing the same book is free.
-- Unsplash's free Demo tier allows 50 requests/hour — plenty for personal use.
+Python · Streamlit · Anthropic Claude API · Unsplash API · Open Library API · Pillow
 
-## Ideas for later
+## 💡 Notes & costs
 
-- Let users pick a specific edition or paste a blurb for more accurate vibes.
-- Download the mood board as an image or PDF.
-- Save favorite boards to revisit.
-- Generate original images (instead of stock photos) by adding an image-generation API.
+- Results are **cached to disk**, so a book (or recommendation) you've already generated is never re-paid for — even across restarts.
+- Each new board is roughly a few cents on Claude; recommendation detail panels are a small extra call, generated only when you click.
+- Unsplash's free Demo tier allows **50 requests/hour**. Moodmark fetches at most 6 photos per board to stay well under that.
+
+## 🌱 Ideas for later
+
+- "Set the mood" pairings (drink, scent, setting) and a soundtrack
+- A vibe radar chart across mood dimensions
+- Wallpaper-sized exports
+- Bring-your-own-key mode for public deployment
