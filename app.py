@@ -16,6 +16,8 @@ Run it with:  streamlit run app.py
 """
 
 import os
+import threading
+import time
 from io import BytesIO
 from typing import List
 
@@ -104,6 +106,42 @@ SYSTEM_PROMPT = (
 
 
 # ---------------------------------------------------------------------------
+# Global rate limit: cap how many *new* mood boards everyone can generate per
+# hour, so a shared API key can't run up a surprise bill. Cached boards don't
+# count (they never hit the API).
+# ---------------------------------------------------------------------------
+
+MAX_BOARDS_PER_HOUR = 15
+
+
+class RateLimitExceeded(Exception):
+    """Raised when the global hourly mood-board cap is reached."""
+
+    def __init__(self, minutes: int):
+        self.minutes = minutes
+        super().__init__(f"Rate limit reached; retry in ~{minutes} min")
+
+
+@st.cache_resource
+def _board_rate_limiter() -> dict:
+    """Process-wide state shared across all user sessions on this app instance."""
+    return {"lock": threading.Lock(), "times": []}
+
+
+def _check_board_rate_limit() -> None:
+    """Record one new board; raise RateLimitExceeded if over MAX_BOARDS_PER_HOUR."""
+    state = _board_rate_limiter()
+    now = time.time()
+    with state["lock"]:
+        # Keep only the timestamps from the last hour.
+        state["times"] = [t for t in state["times"] if now - t < 3600]
+        if len(state["times"]) >= MAX_BOARDS_PER_HOUR:
+            retry_in = 3600 - (now - state["times"][0])
+            raise RateLimitExceeded(max(1, round(retry_in / 60)))
+        state["times"].append(now)
+
+
+# ---------------------------------------------------------------------------
 # Step 1: ask Claude to design the mood board
 # ---------------------------------------------------------------------------
 
@@ -115,6 +153,10 @@ def generate_mood_board(book_title: str, anthropic_api_key: str) -> MoodBoard:
     Cached to disk by (book_title, key), so a given book is generated once ever —
     even across app restarts — rather than re-spending on every run.
     """
+    # Enforce the global hourly cap. Runs only on a real API call (cache miss);
+    # already-generated books load from cache without consuming a slot.
+    _check_board_rate_limit()
+
     client = Anthropic(api_key=anthropic_api_key)
 
     response = client.messages.parse(
@@ -465,6 +507,13 @@ if generate:
     try:
         with st.spinner("Reading the book and choosing a palette..."):
             board = generate_mood_board(book_title, anthropic_key)
+    except RateLimitExceeded as e:
+        st.warning(
+            f"Moodmark has hit its limit of {MAX_BOARDS_PER_HOUR} new mood boards this hour "
+            f"(a safeguard on API costs). Please try again in about {e.minutes} minute(s) — "
+            "books that were already generated still load instantly."
+        )
+        st.stop()
     except Exception as e:  # noqa: BLE001 - show the user a friendly message
         st.error(f"Something went wrong talking to Claude: {e}")
         st.stop()
