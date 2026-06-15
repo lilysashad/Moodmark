@@ -1,0 +1,8 @@
+# App theme. Edit these colors to restyle the UI.
+# Docs: https://docs.streamlit.io/develop/concepts/configuration/theming
+
+[theme]
+base = "light"                         # light base pairs with the black text
+backgroundColor = "#d98ad9"            # softened magenta so black text reads well
+secondaryBackgroundColor = "#e9b8e9"   # input box / widget background (lighter tint)
+textColor = "#000000"                  # black text
