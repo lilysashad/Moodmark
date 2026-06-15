@@ -7,9 +7,14 @@ palette, aesthetic keywords, an essence-capturing quote, and a wall of real phot
 all downloadable as a single shareable image. It even recommends books with a similar
 vibe that you can click to explore.
 
-![A mood board Moodmark generated for "Scythe"](docs/sample_board.png)
+![Screenshot of Moodmark book results for "Scythe"](docs/MOODMARK_1.png)
+![Screenshot of Moodmark color palette and aesthetics results for "Scythe"](docs/MOODMARK_2.png)
+![Screenshot of Moodmark pictures results for "Scythe"](docs/MOODMARK_3.png)
+![Screenshot of Moodmark book recommendation results for "Scythe"- recommending The Giver](docs/MOODMARK_4.png)
+![Screenshot of Moodmark book recommendation color palette results for "Scythe"](docs/MOODMARK_5.png)
+![A mood board Moodmark generated for "Scythe"](docs/scythe_moodboard.png)
 
-> _Above: the downloadable image Moodmark composes (palette + photos). For a peek at the live app UI, run it locally — see Setup._
+> _Above: the UI of Moodmark after a book input and downloadable image Moodmark composes (palette + photos). For a peek at the live app UI, run it locally — see Setup._
 
 ## ✨ Features
 
